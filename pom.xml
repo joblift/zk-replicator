@@ -3,8 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bloomreach</groupId>
     <artifactId>zk-replicate</artifactId>
-    <version>1.0</version>
-    <packaging>jar</packaging>
+    <version>1.1.0</version>
 
     <name>ZK Replicator</name>
 
@@ -17,9 +16,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.hadoop</groupId>
+            <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
-            <version>3.3.1</version>
+            <version>3.4.11</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.jmx</groupId>
