@@ -37,7 +37,7 @@ public class ZookeeperDataReplicator {
   private String sourceCloneZkPath;
 
   /* Represents the zookeper Handle */
-  private ZooKeeper zkHandle;
+  private ZooKeeper zkTarget;
 
   /**
    * Constructs a Zookeeper Data Replicators with destination Zookeper Host, the root path to replicate
@@ -50,7 +50,7 @@ public class ZookeeperDataReplicator {
   public ZookeeperDataReplicator(String destinationZkServer, String rootReplicatePath, ZkDataNode sourceZkData) {
     this.sourceZkDataNode = sourceZkData;
     this.sourceCloneZkPath = rootReplicatePath;
-    this.zkHandle = ZKConnectionManager.connectToZookeeper(destinationZkServer);
+    this.zkTarget = ZKConnectionManager.connectToZookeeper(destinationZkServer);
   }
 
   /**
@@ -59,7 +59,7 @@ public class ZookeeperDataReplicator {
    */
   public void replicate() throws ZkDataTraversalException {
     try {
-      ZKAccessUtils.validateAndCreateZkPath(zkHandle, sourceCloneZkPath, null);
+      ZKAccessUtils.validateAndCreateZkPath(zkTarget, sourceCloneZkPath, null);
       writeAndFlushData(sourceZkDataNode);
     } catch (Exception e) {
       throw new ZkDataTraversalException(ExceptionUtils.getStackTrace(e));
@@ -71,17 +71,18 @@ public class ZookeeperDataReplicator {
    * Create Path and Flush out Data for the corresponding Zookeeper node and its children.
    *
    * @param node The Zookeeper data to copy from
-   * @throws KeeperException
-   * @throws InterruptedException
    */
   private void writeAndFlushData(ZkDataNode node) throws KeeperException, InterruptedException {
     String path = node.getFQPath();
-    if (ZKAccessUtils.zkPathExists(zkHandle, path)) {
-      logger.info("Path Exists: Setting data...  " + path);
-      ZKAccessUtils.setDataOnZkNode(zkHandle, path, node.getNodeData());
+    if (ZKAccessUtils.zkPathExists(zkTarget, path)) {
+      logger.info("Path Exists: Checking stat...  " + path);
+      if (ZKAccessUtils.sourceNewer(zkTarget, path, node.getStat().getMtime())) {
+        logger.info("Path changes: Updating data..  " + path);
+        ZKAccessUtils.setDataOnZkNode(zkTarget, path, node.getNodeData());
+      }
     } else {
-      logger.info("Path does not exist. Creating now... " + path);
-      ZKAccessUtils.validateAndCreateZkPath(zkHandle, path, node.getNodeData());
+      logger.info("Path not existing: Creating..  " + path);
+      ZKAccessUtils.validateAndCreateZkPath(zkTarget, path, node.getNodeData());
     }
     for (ZkDataNode child : node.getAllChildren()) {
       writeAndFlushData(child);

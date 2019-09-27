@@ -15,6 +15,7 @@
 package com.bloomreach.zk.replicate;
 
 import org.apache.log4j.Logger;
+import org.apache.zookeeper.data.Stat;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +45,8 @@ public class ZkDataNode {
 
   //Storing all my child info. This is needed to recursively iterate.
   private final List<ZkDataNode> allChildren;
+
+  private Stat stat;
 
   /**
    * Constructs a ZkDataNode
@@ -120,4 +123,13 @@ public class ZkDataNode {
   public byte[] getNodeData() {
     return nodeData;
   }
+
+  public void setStat(Stat stat) {
+    this.stat = stat;
+  }
+
+  public Stat getStat() {
+    return stat;
+  }
+
 }

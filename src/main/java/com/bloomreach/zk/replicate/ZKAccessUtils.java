@@ -34,28 +34,22 @@ public class ZKAccessUtils {
   /**
    * Check and create a path if does not exist.
    *
-   * @param zkHandle
-   * @param path
    * @return boolean if zk Path Exists
-   * @throws KeeperException
-   * @throws InterruptedException
    */
   public static boolean zkPathExists(ZooKeeper zkHandle, String path) throws KeeperException, InterruptedException {
-    if (zkHandle.exists(path, false) == null) {
-      return false;
-    } else {
-      return true;
-    }
+    return !(zkHandle.exists(path, false) == null);
+  }
+
+  public static boolean sourceNewer(ZooKeeper zkHandle, String path, long mtimeSource) throws KeeperException, InterruptedException {
+    Stat stat = new Stat();
+    zkHandle.getData(path, false, stat);
+    return mtimeSource > stat.getMtime();
   }
 
   /**
    * Check and create a path if does not exist.
    *
-   * @param zkHandle
-   * @param path
    * @return if path exists or is created
-   * @throws KeeperException
-   * @throws InterruptedException
    */
   public static boolean validateAndCreateZkPath(ZooKeeper zkHandle, String path, byte[] nodeData) throws KeeperException, InterruptedException {
     if (!zkPathExists(zkHandle, path)) {
@@ -68,11 +62,7 @@ public class ZKAccessUtils {
   /**
    * Check and create a path if does not exist.
    *
-   * @param zkHandle
-   * @param path
    * @return {@link org.apache.zookeeper.data.Stat} stats on the current zk node.
-   * @throws KeeperException
-   * @throws InterruptedException
    */
   public static Stat setDataOnZkNode(ZooKeeper zkHandle, String path, byte[] nodeData) throws KeeperException, InterruptedException {
     return zkHandle.setData(path, nodeData, -1);

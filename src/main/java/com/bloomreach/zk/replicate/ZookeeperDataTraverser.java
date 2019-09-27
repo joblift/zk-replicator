@@ -80,11 +80,12 @@ public class ZookeeperDataTraverser {
    * @throws Exception
    */
   public void populate(ZkDataNode zkDataNode) throws Exception {
-    Stat stat = null;
+    Stat stat = new Stat();
     String path = zkDataNode.getFQPath();
     logger.info("Reading node " + path);
     byte[] data = zk.getData(path, false, stat);
     zkDataNode.setNodeData(data);
+    zkDataNode.setStat(stat);
 
     List<String> subFolders = zk.getChildren(path, false);
     for (String folder : subFolders) {
